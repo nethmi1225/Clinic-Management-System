@@ -2,9 +2,6 @@
 #include <queue>
 #include <string>
 #include <regex>
-#include <sstream>
-#include <iomanip>
-#include <ctime>
 #include <vector>
 #include <unordered_map>
 
@@ -131,7 +128,7 @@ public:
         cout << "\nEnter choice:\n1. Update Name\n2. Update Specialty\n3. Update Amount\n";
         cout << "\nChoice: ";
         cin >> choice;
-        cin.ignore();  // To ignore the newline character left by cin
+        cin.ignore();  
 
         switch (choice) {
             case 1:
@@ -205,31 +202,31 @@ public:
 
 private:
     bool ValidDate(const string& date) {
-        // Regular expression for validating date in dd-mm-yyyy format
+        
         if (!regex_match(date, regex("\\d{2}-\\d{2}-\\d{4}"))) {
             return false;
         }
 
-        // Extract day, month, and year from the string
+      
         int day, month, year;
         sscanf(date.c_str(), "%d-%d-%d", &day, &month, &year);
 
-        // Validate year
+       
         if (year < 1900 || year > 2100) {
             return false;
         }
 
-        // Validate month
+        
         if (month < 1 || month > 12) {
             return false;
         }
 
-        // Validate day
+       
         if (day < 1 || day > 31) {
             return false;
         }
 
-        // Check days in month
+        
         if (month == 4 || month == 6 || month == 9 || month == 11) {
             if (day > 30) {
                 return false;
@@ -238,7 +235,7 @@ private:
             if (day > 29) {
                 return false;
             }
-            // Check for leap year
+           
             if ((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)) {
                 if (day > 29) {
                     return false;
@@ -293,7 +290,7 @@ public:
         cout << "\n---Update Patient Details---\n";
         cout << "Enter Patient ID: ";
         cin >> id;
-        cin.ignore();  // To ignore the newline character left by cin
+        cin.ignore();  
 
         if (patientCache.find(id) != patientCache.end()) {
             patientCache[id].updatePatient();
@@ -314,21 +311,21 @@ public:
         cout << "\n---Update Doctor Details---\n";
         cout << "Enter Doctor ID: ";
         cin >> id;
-        cin.ignore();  // To ignore the newline character left by cin
+        cin.ignore();  
 
         if (docCache.find(id) != docCache.end()) {
             docCache[id].updateDoc();
-            // Update doctor details in the queue as well
+         
             queue<Doctor> tempQueue;
             while (!doctors.empty()) {
                 Doctor doctor = doctors.front();
                 doctors.pop();
                 if (doctor.id == id) {
-                    doctor = docCache[id];  // Update doctor with new details
+                    doctor = docCache[id]; 
                 }
                 tempQueue.push(doctor);
             }
-            doctors = tempQueue;  // Replace the old queue with updated queue
+            doctors = tempQueue;  
         } else {
             cout << "Doctor ID not available.\n";
         }
