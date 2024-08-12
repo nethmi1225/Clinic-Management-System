@@ -1,0 +1,467 @@
+#include <iostream>
+#include <queue>
+#include <string>
+#include <regex>
+#include <sstream>
+#include <iomanip>
+#include <ctime>
+#include <vector>
+#include <unordered_map>
+
+using namespace std;
+
+int PatientId = 1, consultationId = 1, doctorId = 1;
+
+vector<string> spec = {
+    "General Practitioner",
+    "Cardiologist",
+    "Dermatologist",
+    "Neurologist",
+    "Orthopedic",
+    "Pediatrician",
+    "Psychiatrist",
+    "Surgeon"
+};
+
+class Patient {
+public:
+    int id;
+    string pName;
+    string pphoneNumber;
+    string residence;
+
+    void registerPatient() {
+        id = PatientId++;
+        cout << "\n---Register Patient---\n";
+        cout << "\nEnter Patient Name: ";
+        cin.ignore();
+        getline(cin, pName);
+
+        while (true) {
+            cout << "Enter Mobile Number: ";
+            cin >> pphoneNumber;
+            if (pphoneNumber.length() == 10 && isAllDigits(pphoneNumber)) {
+                break;
+            } else {
+                cout << "Invalid phone number. Enter a 10-digit number again.\n";
+            }
+        }
+        cout << "Enter Address: ";
+        cin.ignore();
+        getline(cin, residence);
+        cout << "Patient ID is: " << id << endl;
+    }
+
+    void updatePatient() {
+        cout << "\n---Update Patient Details---\n";
+        cout << "Enter new Name (Leave empty to keep unchanged): ";
+        string newName;
+        getline(cin, newName);
+        if (!newName.empty()) {
+            pName = newName;
+        }
+
+        cout << "Enter new Phone Number (Leave empty to keep unchanged): ";
+        string newPhoneNumber;
+        getline(cin, newPhoneNumber);
+        if (!newPhoneNumber.empty()) {
+            if (newPhoneNumber.length() == 10 && isAllDigits(newPhoneNumber)) {
+                pphoneNumber = newPhoneNumber;
+            } else {
+                cout << "Invalid phone number. Keeping old value.\n";
+            }
+        }
+
+        cout << "Enter new Address (Leave empty to keep unchanged): ";
+        string newAddress;
+        getline(cin, newAddress);
+        if (!newAddress.empty()) {
+            residence = newAddress;
+        }
+    }
+
+private:
+    bool isAllDigits(const string& str) {
+        for (char c : str) {
+            if (!isdigit(c)) {
+                return false;
+            }
+        }
+        return true;
+    }
+};
+
+class Doctor {
+public:
+    int id;
+    string dname;
+    string dfield;
+    float damnt;
+
+    void addDoctor(int identifier) {
+        id = identifier;
+
+        cout << "\n---Add Doctor---\n";
+        cout << "\nEnter Doctor Name: ";
+        cin.ignore();
+        getline(cin, dname);
+
+        cout << "Available Specialties:\n";
+        for (int i = 0; i < spec.size(); ++i) {
+            cout << (i + 1) << ". " << spec[i] << endl;
+        }
+        int choice;
+        cout << "Select Specialty (1-" << spec.size() << "): ";
+        cin >> choice;
+        if (choice >= 1 && choice <= spec.size()) {
+            dfield = spec[choice - 1];
+        } else {
+            cout << "Invalid choice. Setting specialty to 'General Practitioner'.\n";
+            dfield = "General Practitioner";
+        }
+
+        cout << "Enter Amount: ";
+        cin >> damnt;
+        cout << "Doctor added with ID: " << id << endl;
+    }
+
+    void updateDoc() {
+        int choice = 0;
+        cout << "\n---Update Doctor---\n";
+        cout << "\nEnter choice:\n1. Update Name\n2. Update Specialty\n3. Update Amount\n";
+        cout << "\nChoice: ";
+        cin >> choice;
+        cin.ignore();  // To ignore the newline character left by cin
+
+        switch (choice) {
+            case 1:
+                cout << "\nEnter new Name: ";
+                getline(cin, dname);
+                break;
+
+            case 2:
+                cout << "Available Specialties:\n";
+                for (int i = 0; i < spec.size(); ++i) {
+                    cout << (i + 1) << ". " << spec[i] << endl;
+                }
+                int newchoice;
+                cout << "Select Specialty (1-" << spec.size() << "): ";
+                cin >> newchoice;
+                if (newchoice >= 1 && newchoice <= spec.size()) {
+                    dfield = spec[newchoice - 1];
+                } else {
+                    cout << "Invalid Choice.\n";
+                }
+                break;
+
+            case 3:
+                cout << "\nEnter new Amount: ";
+                cin >> damnt;
+                break;
+
+            default:
+                cout << "\nInvalid input.";
+        }
+    }
+};
+
+class Details {
+public:
+    int id;
+    int PId;
+    int dId;
+    string date;
+    string time;
+
+    void schedulingDetails(int pId) {
+        id = consultationId++;
+        this->PId = pId;
+
+
+        cout << "\nEnter Doctor ID: ";
+        cin >> dId;
+
+        while (true) {
+            cout << "Enter Date (dd-mm-yyyy): ";
+            cin >> date;
+            if (ValidDate(date)) {
+                break;
+            } else {
+                cout << "Please enter in dd-mm-yyyy format.\n";
+            }
+        }
+
+        while (true) {
+            cout << "Enter Time (HH:MM): ";
+            cin >> time;
+            if (ValidTime(time)) {
+                break;
+            } else {
+                cout << "Please enter in HH:MM format.\n";
+            }
+        }
+        cout << "Consultation ID: " << id << endl;
+    }
+
+private:
+    bool ValidDate(const string& date) {
+        // Regular expression for validating date in dd-mm-yyyy format
+        if (!regex_match(date, regex("\\d{2}-\\d{2}-\\d{4}"))) {
+            return false;
+        }
+
+        // Extract day, month, and year from the string
+        int day, month, year;
+        sscanf(date.c_str(), "%d-%d-%d", &day, &month, &year);
+
+        // Validate year
+        if (year < 1900 || year > 2100) {
+            return false;
+        }
+
+        // Validate month
+        if (month < 1 || month > 12) {
+            return false;
+        }
+
+        // Validate day
+        if (day < 1 || day > 31) {
+            return false;
+        }
+
+        // Check days in month
+        if (month == 4 || month == 6 || month == 9 || month == 11) {
+            if (day > 30) {
+                return false;
+            }
+        } else if (month == 2) {
+            if (day > 29) {
+                return false;
+            }
+            // Check for leap year
+            if ((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)) {
+                if (day > 29) {
+                    return false;
+                }
+            } else {
+                if (day > 28) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    bool ValidTime(const string& time) {
+        return regex_match(time, regex("([01]?[0-9]|2[0-3]):[0-5][0-9]"));
+    }
+};
+
+class MedicalCenter {
+public:
+    int adminID;
+    int passcode;
+    queue<Patient> patients;
+    queue<Doctor> doctors;
+    queue<Details> dets;
+
+    MedicalCenter(int admin, int pass) {
+        adminID = admin;
+        passcode = pass;
+    }
+
+    int authenticate() {
+        int admin, pass;
+        cout << "\n---Authentication---\n";
+        cout << "\nEnter Admin ID: ";
+        cin >> admin;
+        cout << "Enter Password: ";
+        cin >> pass;
+        return (admin == adminID && pass == passcode) ? 1 : 0;
+    }
+
+    void registerPatient() {
+        Patient patient;
+        patient.registerPatient();
+        patients.push(patient);
+        patientCache[patient.id] = patient;
+    }
+
+    void updatePatient() {
+        int id;
+        cout << "\n---Update Patient Details---\n";
+        cout << "Enter Patient ID: ";
+        cin >> id;
+        cin.ignore();  // To ignore the newline character left by cin
+
+        if (patientCache.find(id) != patientCache.end()) {
+            patientCache[id].updatePatient();
+        } else {
+            cout << "Patient ID not available.\n";
+        }
+    }
+
+    void addDoctor() {
+        Doctor doc;
+        doc.addDoctor(doctorId++);
+        doctors.push(doc);
+        docCache[doc.id] = doc;
+    }
+
+    void updateDoc() {
+        int id;
+        cout << "\n---Update Doctor Details---\n";
+        cout << "Enter Doctor ID: ";
+        cin >> id;
+        cin.ignore();  // To ignore the newline character left by cin
+
+        if (docCache.find(id) != docCache.end()) {
+            docCache[id].updateDoc();
+            // Update doctor details in the queue as well
+            queue<Doctor> tempQueue;
+            while (!doctors.empty()) {
+                Doctor doctor = doctors.front();
+                doctors.pop();
+                if (doctor.id == id) {
+                    doctor = docCache[id];  // Update doctor with new details
+                }
+                tempQueue.push(doctor);
+            }
+            doctors = tempQueue;  // Replace the old queue with updated queue
+        } else {
+            cout << "Doctor ID not available.\n";
+        }
+    }
+
+    void scheduleDetails() {
+        int id;
+        cout << "\n---Schedule Consultation Details---\n";
+        cout << "Enter Patient ID: ";
+        cin >> id;
+
+        if (patientCache.find(id) != patientCache.end()) {
+            Details det;
+            det.schedulingDetails(id);
+            dets.push(det);
+            detCache[det.id] = det;
+        } else {
+            cout << "Patient ID not available.\n";
+        }
+    }
+
+    void showConsultations() {
+        cout << "\n---Consultation Details---\n";
+        queue<Details> tempQueue = dets;
+
+        while (!tempQueue.empty()) {
+            Details consultation = tempQueue.front();
+            tempQueue.pop();
+
+            cout << "Appointment ID: " << consultation.id
+                 << ", Patient ID: " << consultation.PId
+                 << ", Doctor ID: " << consultation.dId
+                 << ", Date: " << consultation.date
+                 << ", Time: " << consultation.time << endl;
+        }
+    }
+
+    void showPatients() {
+        cout << "\n---Patient Details---\n";
+        queue<Patient> tempQueue = patients;
+
+        while (!tempQueue.empty()) {
+            Patient patient = tempQueue.front();
+            tempQueue.pop();
+
+            cout << "Patient ID: " << patient.id
+                 << ", Patient Name: " << patient.pName
+                 << ", Phone Number: " << patient.pphoneNumber
+                 << ", Address: " << patient.residence << endl;
+        }
+    }
+
+    void showDoctors() {
+        cout << "\n---Doctor Details---\n";
+        queue<Doctor> tempQueue = doctors;
+
+        while (!tempQueue.empty()) {
+            Doctor doctor = tempQueue.front();
+            tempQueue.pop();
+
+            cout << "Doctor ID: " << doctor.id
+                 << ", Doctor Name: " << doctor.dname
+                 << ", Specialty: " << doctor.dfield
+                 << ", Amount: " << doctor.damnt << endl;
+        }
+    }
+
+private:
+    unordered_map<int, Patient> patientCache;
+    unordered_map<int, Doctor> docCache;
+    unordered_map<int, Details> detCache;
+};
+
+int main() {
+    int attempts = 0;
+    MedicalCenter center(123, 123);
+
+    while (attempts < 3) {
+        if (center.authenticate() == 0) {
+            cout << "\nInvalid Access\n";
+            attempts++;
+        } else {
+            break;
+        }
+    }
+
+    if (attempts == 3) {
+        cout << "Invalid access attempted beyond 3 times, exiting\n";
+        return 1;
+    }
+
+    int choice;
+    while (true) {
+        cout << "\n---Main Menu---\n";
+        cout << "\n1) Register Patient\n2) Add Doctor\n3) Update Doctor\n4) Schedule Consultation\n5) Show Consultation Details\n6) Show Patients\n7) Show Doctors\n8) Exit\n";
+        cout << "\nChoice: ";
+        cin >> choice;
+        switch (choice) {
+            case 1:
+                center.registerPatient();
+                break;
+
+            case 2:
+                center.addDoctor();
+                break;
+
+            case 3:
+                center.updateDoc();
+                break;
+
+            case 4:
+                center.scheduleDetails();
+                break;
+
+            case 5:
+                center.showConsultations();
+                break;
+
+            case 6:
+                center.showPatients();
+                break;
+
+            case 7:
+                center.showDoctors();
+                break;
+
+            case 8:
+                return 0;
+
+            default:
+                cout << "\nInvalid Entry!";
+        }
+    }
+
+    return 0;
+}
